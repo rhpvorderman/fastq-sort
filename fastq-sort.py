@@ -9,7 +9,7 @@ import contextlib
 import dnaio
 from xopen import xopen
 
-READ_OPENER = functools.partial(xopen, threads=1)
+READ_OPENER = functools.partial(xopen, threads=0)
 
 
 def fastq_to_sorted_chunks(fastq: str, output_prefix: str,
@@ -23,7 +23,7 @@ def fastq_to_sorted_chunks(fastq: str, output_prefix: str,
             if len(records) == 0:
                 break
             records.sort(key=attrgetter('sequence'))
-            with xopen(filename, mode="wb", format="gz", threads=1, compresslevel=1
+            with xopen(filename, mode="wb", format="gz", threads=0, compresslevel=1
                        ) as sorted_chunk:
                 for record in records:
                     sorted_chunk.write(record.fastq_bytes())
@@ -36,7 +36,7 @@ def sorted_chunks_to_sorted_fastq(sorted_chunks: List[str], output_file: str):
         files = [stack.enter_context(
                  dnaio.open(sorted_chunk, mode="r", opener=READ_OPENER))
                  for sorted_chunk in sorted_chunks]
-        with xopen(output_file, mode="wb", compresslevel=1, threads=1
+        with xopen(output_file, mode="wb", compresslevel=1, threads=0
                    ) as output:
             for record in heapq.merge(*files, key=attrgetter('sequence')):
                 output.write(record.fastq_bytes())
