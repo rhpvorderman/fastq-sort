@@ -27,6 +27,9 @@ def fastq_to_sorted_chunks(fastq: str, output_prefix: str,
                        ) as sorted_chunk:
                 for record in records:
                     sorted_chunk.write(record.fastq_bytes())
+            # If not explicitly deleted python keeps the reference alive
+            # throughout the next loop, effectively doubling the memory usage.
+            del(records)
             sorted_chunks.append(filename)
     return sorted_chunks
 
