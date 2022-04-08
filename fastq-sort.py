@@ -27,6 +27,7 @@ def fastq_to_sorted_chunks(fastq: str, output_prefix: str,
                        ) as sorted_chunk:
                 for record in records:
                     sorted_chunk.write(record.fastq_bytes())
+            sorted_chunks.append(filename)
     return sorted_chunks
 
 
@@ -35,11 +36,10 @@ def sorted_chunks_to_sorted_fastq(sorted_chunks: List[str], output_file: str):
         files = [stack.enter_context(
                  dnaio.open(sorted_chunk, mode="r", opener=READ_OPENER))
                  for sorted_chunk in sorted_chunks]
-        with heapq.merge(files, key=attrgetter('sequence')) as merged:
-            with xopen(output_file, mode="wb", compresslevel=1, threads=1
-                       ) as output:
-                for record in merged:
-                    output.write(record.fastq_bytes())
+        with xopen(output_file, mode="wb", compresslevel=1, threads=1
+                   ) as output:
+            for record in heapq.merge(*files, key=attrgetter('sequence')):
+                output.write(record.fastq_bytes())
 
 
 def argument_parser() -> argparse.ArgumentParser:
