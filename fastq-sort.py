@@ -4,7 +4,7 @@ from operator import attrgetter
 from typing import List
 import heapq
 import contextlib
-
+import os
 
 import dnaio
 from xopen import xopen
@@ -49,12 +49,16 @@ def argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("input", metavar="INPUT", help="Input FASTQ file")
     parser.add_argument("-o", "--output", help="Output FASTQ file")
+    parser.add_argument("--tmp", help="Temporary sorted files are stored here")
     return parser
 
 
 def main():
     args = argument_parser().parse_args()
-    sorted_chunks = fastq_to_sorted_chunks(args.input, args.output)
+    output_prefix = args.output
+    if args.tmp:
+        output_prefix = os.path.join(args.tmp, os.path.basename(args.output))
+    sorted_chunks = fastq_to_sorted_chunks(args.input, output_prefix)
     sorted_chunks_to_sorted_fastq(sorted_chunks, args.output)
 
 
